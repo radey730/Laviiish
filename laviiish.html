@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LAViiiSH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --black: #080808;
+      --off-black: #0f0f0f;
+      --card: #141414;
+      --border: #222;
+      --gold: #c9a84c;
+      --gold-light: #e8c96e;
+      --white: #f5f5f0;
+      --muted: #555;
+      --text: #d0cfc9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 10px; height: 10px;
+      background: var(--gold);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), width 0.3s, height 0.3s, opacity 0.3s;
+      transform: translate(-50%, -50%);
+    }
+    body:hover .cursor { opacity: 1; }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 48px;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.25em;
+      color: var(--white);
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 70% 40%, rgba(201,168,76,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 70%, rgba(201,168,76,0.03) 0%, transparent 60%),
+        var(--black);
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, var(--black) 100%);
+    }
+
+    /* Floating vertical text */
+    .hero-side-text {
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1s 0.2s both;
+    }
+
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 15vw, 14rem);
+      line-height: 0.88;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1s 0.4s both;
+    }
+    .hero-name .outline {
+      -webkit-text-stroke: 1px rgba(201,168,76,0.5);
+      color: transparent;
+    }
+
+    .hero-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin-top: 20px;
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1s 0.6s both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1s 0.8s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: all 0.3s ease;
+    }
+    .btn-gold {
+      background: var(--gold);
+      color: var(--black);
+      font-weight: 500;
+    }
+    .btn-gold:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+      animation: fadeIn 2s 1.5s both;
+    }
+    .scroll-indicator span {
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s infinite;
+    }
+
+    /* SECTIONS */
+    section {
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      letter-spacing: 0.05em;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 60px;
+    }
+
+    /* MUSIC / STREAMING */
+    .streaming-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px;
+    }
+
+    .platform-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      text-decoration: none;
+      transition: all 0.35s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .platform-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.06), transparent);
+      opacity: 0;
+      transition: opacity 0.35s;
+    }
+    .platform-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .platform-card:hover::before { opacity: 1; }
+
+    .platform-icon {
+      font-size: 2rem;
+    }
+
+    .platform-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+    }
+    .platform-card:hover .platform-name { color: var(--gold); }
+
+    .platform-arrow {
+      margin-top: auto;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+    .platform-card:hover .platform-arrow { color: var(--gold); }
+
+    /* DIVIDER */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+    }
+
+    /* BOOKING */
+    .booking-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .booking-info p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .booking-types {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-bottom: 40px;
+    }
+
+    .booking-type {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .booking-type:first-child { border-top: 1px solid var(--border); }
+
+    .booking-dot {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .booking-type-name {
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    /* FORM */
+    .booking-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input, textarea, select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.3s;
+      cursor: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--gold);
+    }
+
+    select option { background: var(--card); }
+
+    textarea { resize: vertical; min-height: 120px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .submit-btn {
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      padding: 18px 40px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+      align-self: flex-start;
+    }
+    .submit-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      background: var(--gold);
+      color: var(--black);
+      padding: 16px 28px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      z-index: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* SOCIAL / FOOTER */
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.25em;
+      color: var(--white);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .social-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .social-links a:hover { color: var(--gold); }
+
+    .footer-copy {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* MARQUEE */
+    .marquee-wrapper {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      background: var(--off-black);
+    }
+    .marquee-track {
+      display: flex;
+      gap: 64px;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .marquee-item.accent { color: var(--gold); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.1); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav { padding: 24px; }
+      .nav-links { display: none; }
+      .hero { padding: 0 24px 60px; }
+      section { padding: 80px 24px; }
+      .booking-wrapper { grid-template-columns: 1fr; gap: 48px; }
+      .form-row { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; gap: 24px; text-align: center; }
+      .social-links { flex-wrap: wrap; justify-content: center; }
+      .hero-side-text { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">LAV<span>III</span>SH</div>
+    <ul class="nav-links">
+      <li><a href="#music">Music</a></li>
+      <li><a href="#booking">Booking</a></li>
+      <li><a href="#connect">Connect</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" style="padding-top:0; max-width:100%; margin:0;">
+    <div class="hero-bg"></div>
+    <div class="hero-side-text">@real.laviiish</div>
+
+    <p class="hero-tag">Hip Hop Artist</p>
+    <h1 class="hero-name">
+      LAV<span class="outline">III</span>SH
+    </h1>
+    <p class="hero-sub">Music. Features. Shows.</p>
+
+    <div class="hero-cta">
+      <a href="#music" class="btn btn-gold">Stream Now</a>
+      <a href="#booking" class="btn btn-outline">Book Me</a>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrapper">
+    <div class="marquee-track">
+      <span class="marquee-item">LAVIISH</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">HIP HOP</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">FEATURES AVAILABLE</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">SHOWS AVAILABLE</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">LAVIISH</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">HIP HOP</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">FEATURES AVAILABLE</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">SHOWS AVAILABLE</span>
+      <span class="marquee-item accent">✦</span>
+    </div>
+  </div>
+
+  <!-- MUSIC SECTION -->
+  <section id="music">
+    <div class="reveal">
+      <p class="section-label">Listen</p>
+      <h2 class="section-title">Stream My Music</h2>
+    </div>
+
+    <div class="streaming-grid reveal">
+      <a class="platform-card" href="https://open.spotify.com/artist/6tK2sZ2FhPqmcdIMKcsUdx" target="_blank">
+        <div class="platform-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="16" fill="#1DB954"/>
+            <path d="M22 12.5c-3.5-2-9.5-2.2-12.9-1.2-.55.17-.85.74-.68 1.29.17.55.74.85 1.29.68 2.95-.9 8.35-.72 11.3 1.04.49.29 1.12.13 1.41-.36.29-.49.13-1.12-.42-1.43zm-.13 3.5c-.25.42-.79.55-1.21.3-2.91-1.79-7.35-2.31-10.79-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 3.93-1.19 8.81-.61 12.19 1.44.42.25.55.79.3 1.21v-.06zm-1.38 3.37c-.2.33-.63.44-.96.24-2.55-1.56-5.76-1.91-9.54-1.05-.37.08-.73-.15-.81-.52-.08-.37.15-.73.52-.81 4.14-.95 7.69-.54 10.55 1.21.33.2.44.63.24.96v-.03z" fill="white"/>
+          </svg>
+        </div>
+        <div class="platform-name">Spotify</div>
+        <div class="platform-arrow">Listen Now →</div>
+      </a>
+
+      <a class="platform-card" href="https://music.apple.com/search?term=laviiish" target="_blank">
+        <div class="platform-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#FC3C44"/>
+            <path d="M21.5 9H17l-1 3h3.5l-6 12h2.5l1.5-3h4l.5 3H24L21.5 9zM18 18l2-4 1 4h-3z" fill="white"/>
+            <path d="M10 11c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 6c2.67 0 8 1.34 8 4v1H2v-1c0-2.66 5.33-4 8-4z" fill="white"/>
+          </svg>
+        </div>
+        <div class="platform-name">Apple Music</div>
+        <div class="platform-arrow">Listen Now →</div>
+      </a>
+
+      <a class="platform-card" href="https://www.youtube.com/@RealLAViiiSH" target="_blank">
+        <div class="platform-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#FF0000"/>
+            <path d="M26.5 10.5s-.3-1.9-1.1-2.7c-1.1-1.1-2.3-1.1-2.8-1.2C19.8 6.4 16 6.4 16 6.4s-3.8 0-6.6.2c-.5.1-1.7.1-2.8 1.2C5.8 8.6 5.5 10.5 5.5 10.5S5.2 12.7 5.2 14.9v2.1c0 2.2.3 4.4.3 4.4s.3 1.9 1.1 2.7c1.1 1.1 2.5 1.1 3.1 1.2 2.3.2 9.3.3 9.3.3s3.8 0 6.6-.3c.5-.1 1.7-.1 2.8-1.2.8-.8 1.1-2.7 1.1-2.7s.3-2.2.3-4.4v-2.1c0-2.2-.3-4.4-.3-4.4zM13.5 19.5v-7.6l7.5 3.8-7.5 3.8z" fill="white"/>
+          </svg>
+        </div>
+        <div class="platform-name">YouTube Music</div>
+        <div class="platform-arrow">Listen Now →</div>
+      </a>
+
+      <a class="platform-card" href="https://soundcloud.com/search?q=laviiish" target="_blank">
+        <div class="platform-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#FF5500"/>
+            <path d="M5 17.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5c0-.27-.07-.52-.2-.75L6.5 16l-1.3.75C5.07 16.98 5 17.23 5 17.5zM8 17.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4l-1.5.5L8 14v3.5zM11 17.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6l-1.5.5-1.5-.5v6zM14 17.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7.5a5.5 5.5 0 00-1.5-.5v8zM17.5 10a5.5 5.5 0 100 11h5a2.5 2.5 0 000-5 2.48 2.48 0 00-.5.05A5.5 5.5 0 0017.5 10z" fill="white"/>
+          </svg>
+        </div>
+        <div class="platform-name">SoundCloud</div>
+        <div class="platform-arrow">Listen Now →</div>
+      </a>
+
+    </div>
+  </section>
+
+  <div class="divider" style="max-width:1200px; margin: 0 auto 0;"></div>
+
+  <!-- BOOKING SECTION -->
+  <section id="booking" style="max-width:1200px; margin: 0 auto;">
+    <div class="reveal">
+      <p class="section-label">Work With Me</p>
+      <h2 class="section-title">Book LAViiiSH</h2>
+    </div>
+
+    <div class="booking-wrapper">
+      <div class="booking-info reveal">
+        <p>Whether you need a verse, a hook, or a full live performance — reach out and let's build something. All inquiries are reviewed within 48 hours.</p>
+
+        <div class="booking-types">
+          <div class="booking-type">
+            <div class="booking-dot"></div>
+            <div class="booking-type-name">Features &amp; Collabs</div>
+          </div>
+          <div class="booking-type">
+            <div class="booking-dot"></div>
+            <div class="booking-type-name">Live Shows &amp; Events</div>
+          </div>
+          <div class="booking-type">
+            <div class="booking-dot"></div>
+            <div class="booking-type-name">Pop-Ups &amp; Promo</div>
+          </div>
+          <div class="booking-type">
+            <div class="booking-dot"></div>
+            <div class="booking-type-name">Brand Partnerships</div>
+          </div>
+        </div>
+
+        <a href="https://www.instagram.com/real.laviiish/" target="_blank" class="btn btn-outline">
+          DM on Instagram →
+        </a>
+      </div>
+
+      <div class="booking-form reveal">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" placeholder="Full Name" />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="your@email.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="type">Booking Type</label>
+          <select id="type">
+            <option value="">Select a type...</option>
+            <option>Feature / Collab</option>
+            <option>Live Show</option>
+            <option>Event Appearance</option>
+            <option>Pop-Up / Promo</option>
+            <option>Brand Partnership</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date / Timeframe</label>
+          <input type="text" id="date" placeholder="e.g. June 2025 or ASAP" />
+        </div>
+
+        <div class="form-group">
+          <label for="message">Tell Me More</label>
+          <textarea id="message" placeholder="Share details about the project, show, or opportunity..."></textarea>
+        </div>
+
+        <button class="submit-btn" onclick="handleSubmit()">Send Inquiry</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" style="max-width:1200px; margin: 0 auto;"></div>
+
+  <!-- FOOTER / CONNECT -->
+  <section id="connect" style="padding: 0 48px 80px; max-width: 100%; margin: 0;">
+    <div class="footer-inner">
+      <div class="footer-logo">LAViiiSH</div>
+
+      <ul class="social-links">
+        <li>
+          <a href="https://www.instagram.com/real.laviiish/" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            Instagram
+          </a>
+        </li>
+        <li>
+          <a href="https://open.spotify.com/artist/6tK2sZ2FhPqmcdIMKcsUdx" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+          </a>
+        </li>
+        <li>
+          <a href="https://www.youtube.com/@RealLAViiiSH" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            YouTube
+          </a>
+        </li>
+      </ul>
+
+      <p class="footer-copy">© 2025 LAViiiSH. All Rights Reserved.</p>
+    </div>
+  </section>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">Inquiry Sent ✦</div>
+
+  <script>
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top = my + 'px';
+    });
+
+    function animateRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top = ry + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.querySelectorAll('a, button, input, textarea, select').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.width = '60px';
+        ring.style.height = '60px';
+        ring.style.borderColor = 'rgba(201,168,76,0.7)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.width = '36px';
+        ring.style.height = '36px';
+        ring.style.borderColor = 'rgba(201,168,76,0.4)';
+      });
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => obs.observe(r));
+
+    // Form submit
+    function handleSubmit() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const type = document.getElementById('type').value;
+      const message = document.getElementById('message').value.trim();
+
+      if (!name || !email || !type || !message) {
+        alert('Please fill out all fields before submitting.');
+        return;
+      }
+
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+
+      // Clear form
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('type').value = '';
+      document.getElementById('date').value = '';
+      document.getElementById('message').value = '';
+    }
+  </script>
+</body>
+</html>
