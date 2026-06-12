@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LAViiiSH // SYSTEM BOOT</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-dark: #020204;
+      --system-blue: #0a1128;
+      --neon-green: #00ff66;
+      --neon-blue: #00d2ff;
+      --white: #ffffff;
+      --muted: #444c56;
+      --panel-bg: rgba(5, 8, 22, 0.85);
+    }
+
+    *, *::before, *::after { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--white);
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* CRT Screen Scanline Effects */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 9999;
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.7) 100%);
+      z-index: 9998;
+      pointer-events: none;
+    }
+
+    /* CRT Flicker & Glitch animations */
+    .crt-flicker {
+      animation: crt-output 0.15s infinite;
+    }
+
+    @keyframes crt-output {
+      0% { opacity: 0.98; }
+      50% { opacity: 1; }
+      100% { opacity: 0.99; }
+    }
+
+    /* INITIAL BOOT SCREEN */
+    #boot-container {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .system-log {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #555;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .start-prompt {
+      font-family: 'VT323', monospace;
+      font-size: 3.5rem;
+      color: var(--neon-green);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-align: center;
+      animation: blink 1.2s steps(2, start) infinite;
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+
+    @keyframes blink {
+      to { visibility: hidden; }
+    }
+
+    /* MAIN MENU SUITE (PS2 Style Grid Environment) */
+    #main-container {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      background: radial-gradient(circle at center, var(--system-blue) 0%, var(--bg-dark) 100%);
+      position: relative;
+      padding: 60px;
+    }
+
+    .ambient-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center;
+      transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-50px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--muted);
+      padding-bottom: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .console-title {
+      font-size: 1.8rem;
+      letter-spacing: 6px;
+      font-weight: bold;
+      color: var(--white);
+    }
+    .console-title span { color: var(--neon-blue); }
+
+    .system-clock {
+      color: var(--neon-blue);
+      font-size: 0.9rem;
+    }
+
+    /* SCREEN LAYOUT SPLIT */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 60px;
+      margin-top: 50px;
+      height: calc(100% - 140px);
+      position: relative;
+      z-index: 10;
+    }
+
+    /* OS MENU NAVIGATION */
+    .menu-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .menu-btn {
+      background: transparent;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      padding: 16px 24px;
+      text-align: left;
+      letter-spacing: 3px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .menu-btn::before {
+      content: '►';
+      position: absolute;
+      left: 10px;
+      opacity: 0;
+      color: var(--neon-blue);
+      transition: opacity 0.2s;
+    }
+
+    .menu-btn:hover, .menu-btn.active {
+      color: var(--white);
+      border-color: var(--neon-blue);
+      background: rgba(0, 210, 255, 0.05);
+      padding-left: 35px;
+    }
+
+    .menu-btn:hover::before, .menu-btn.active::before {
+      opacity: 1;
+    }
+
+    /* DISPLAY MODULE PANELS */
+    .content-window {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      overflow-y: auto;
+      padding: 40px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    .panel-content {
+      display: none;
+      animation: panelFade 0.3s ease forwards;
+    }
+
+    .panel-content.active {
+      display: block;
+    }
+
+    @keyframes panelFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-title {
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+      color: var(--neon-blue);
+      margin-bottom: 24px;
+      border-bottom: 1px dashed var(--muted);
+      padding-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    /* BRUTALIST AWGE GRID INTERFACE */
+    .media-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .matrix-node {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--muted);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--white);
+      transition: all 0.2s ease;
+    }
+
+    .matrix-node:hover {
+      border-color: var(--neon-green);
+      background: rgba(0, 255, 102, 0.03);
+    }
+
+    .node-icon {
+      font-size: 1.5rem;
+      color: var(--neon-green);
+    }
+
+    .node-meta {
+      font-size: 0.75rem;
+      color: #777;
+    }
+
+    /* APPLICATION INTERFACE FORMS */
+    .system-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 550px;
+    }
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-block label {
+      font-size: 0.8rem;
+      color: var(--neon-blue);
+      letter-spacing: 1px;
+    }
+
+    .field-block input, .field-block select, .field-block textarea {
+      background: #000;
+      border: 1px solid var(--muted);
+      color: var(--white);
+      padding: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      outline: none;
+    }
+
+    .field-block input:focus, .field-block select:focus, .field-block textarea:focus {
+      border-color: var(--neon-blue);
+    }
+
+    .execute-btn {
+      background: var(--neon-blue);
+      color: #000;
+      border: none;
+      font-family: 'Share Tech Mono', monospace;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .execute-btn:hover {
+      background: var(--white);
+    }
+
+    /* SYSTEM TOAST NOTIFICATION */
+    #sys-alert {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--neon-green);
+      color: #000;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      display: none;
+      z-index: 1000;
+      letter-spacing: 1px;
+    }
+
+    /* RESPONSIVE OVERRIDES */
+    @media (max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; gap: 30px; }
+      #main-container { padding: 20px; overflow-y: auto; }
+      body { overflow: auto; }
+    }
+  </style>
+</head>
+<body class="crt-flicker">
+
+  <div id="boot-container">
+    <div class="system-log">
+      SYS_INIT: OK<br>
+      VRAM_ALLOCATION: SUCCESSFUL<br>
+      CONTROLLER_MAP: PORT_1_CONNECTED<br>
+      DISC_READ: TRACK_DATA_LOADED
+    </div>
+    <button class="start-prompt" onclick="triggerSystemBoot()">PRESS START BUTTON</button>
+  </div>
+
+  <div id="main-container">
+    <div class="ambient-grid"></div>
+
+    <header>
+      <div class="console-title">LAV<span>III</span>SH</div>
+      <div class="system-clock" id="clock-display">00:00:00:00</div>
+    </header>
+
+    <div class="dashboard">
+      <nav class="menu-options">
+        <button class="menu-btn active" onclick="switchModule(this, 'index-panel')">01 // HOME</button>
+        <button class="menu-btn" onclick="switchModule(this, 'transmission-panel')">02 // INQUIRY</button>
+      </nav>
+
+      <main class="content-window">
+        
+        <div id="index-panel" class="panel-content active">
+          <h2 class="panel-title">System Dashboard</h2>
+          <div style="border: 1px solid rgba(255,255,255,0.05); padding: 20px; background: rgba(0,0,0,0.3); margin-bottom: 30px;">
+            <span style="color: var(--neon-green)">[ONLINE]</span> CORE_PROJECTS // Visual direction, sound architecture, and content curation engine deployed successfully. Select an interface pipeline below to execute transmission channels.
+          </div>
+
+          <h3 style="font-size: 1.1rem; letter-spacing: 2px; color: var(--neon-blue); margin-bottom: 16px; text-transform: uppercase;">Media Arrays</h3>
+          <div class="media-matrix">
+            <a class="matrix-node" href="https://open.spotify.com/search/laviiish" target="_blank">
+              <div class="node-icon">💾</div>
+              <div>Spotify</div>
+              <div class="node-meta">Direct Streaming Interface</div>
+            </a>
+
+            <a class="matrix-node" href="https://music.apple.com/search?term=laviiish" target="_blank">
+              <div class="node-icon">📀</div>
+              <div>Apple Music</div>
+              <div class="node-meta">Lossless Audio Pipeline</div>
+            </a>
+
+            <a class="matrix-node" href="https://www.youtube.com/@RealLAViiiSH" target="_blank">
+              <div class="node-icon">📺</div>
+              <div>YouTube</div>
+              <div class="node-meta">Broadcasting System</div>
+            </a>
+
+            <a class="matrix-node" href="https://soundcloud.com/search?q=laviiish" target="_blank">
+              <div class="node-icon">☁️</div>
+              <div>SoundCloud</div>
+              <div class="node-meta">Cloud Deployment Node</div>
+            </a>
+          </div>
+        </div>
+
+        <div id="transmission-panel" class="panel-content">
+          <h2 class="panel-title">Open Transmission</h2>
+          <div class="system-form">
+            <div class="field-block">
+              <label>OPERATOR NAME</label>
+              <input type="text" id="sys-name" placeholder="Identification String" />
+            </div>
+            <div class="field-block">
+              <label>RETURN ADDRESS</label>
+              <input type="email" id="sys-email" placeholder="operator@domain.com" />
+            </div>
+            <div class="field-block">
+              <label>OPERATION PROFILE</label>
+              <select id="sys-type">
+                <option value="">Choose parameters...</option>
+                <option>Creative Collaboration</option>
+                <option>Live Appearance</option>
+                <option>Project Curation</option>
+                <option>Brand Partnership</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <label>TRANSMISSION MATRIX</label>
+              <textarea id="sys-message" rows="5" placeholder="Input raw project metadata guidelines here..."></textarea>
+            </div>
+            <button class="execute-btn" onclick="executeTransmission()">Execute Data Send</button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="sys-alert">TRANSMISSION SENT successfully //</div>
+
+  <script>
+    // Boot sequence transitions
+    function triggerSystemBoot() {
+      document.getElementById('boot-container').style.display = 'none';
+      document.getElementById('main-container').style.display = 'block';
+    }
+
+    // System module tab switching logic
+    function switchModule(buttonElement, panelId) {
+      document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.panel-content').forEach(panel => panel.classList.remove('active'));
+      
+      buttonElement.classList.add('active');
+      document.getElementById(panelId).classList.add('active');
+    }
+
+    // Real-time console running counter clock loop
+    function initSystemClock() {
+      const clockElement = document.getElementById('clock-display');
+      setInterval(() => {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
+        clockElement.textContent = `${hrs}:${mins}:${secs}:${ms}`;
+      }, 10);
+    }
+    initSystemClock();
+
+    // Data execution pipeline handler
+    function executeTransmission() {
+      const n = document.getElementById('sys-name').value.trim();
+      const e = document.getElementById('sys-email').value.trim();
+      const t = document.getElementById('sys-type').value;
+      const m = document.getElementById('sys-message').value.trim();
+
+      if (!n || !e || !t || !m) {
+        alert('CRITICAL ERROR: ALL INTERFACE DATA BLOCKS MUST BE POPULATED.');
+        return;
+      }
+
+      const notification = document.getElementById('sys-alert');
+      notification.style.display = 'block';
+      setTimeout(() => notification.style.display = 'none', 3000);
+
+      // System Reset clear fields
+      document.getElementById('sys-name').value = '';
+      document.getElementById('sys-email').value = '';
+      document.getElementById('sys-type').value = '';
+      document.getElementById('sys-message').value = '';
+    }
+  </script>
+</body>
+</html>
